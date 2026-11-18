@@ -1,4 +1,4 @@
-BC Practical codes
+BC Practical codes LATEST
 
 Prac1:-
 
@@ -611,11 +611,8 @@ ether.js
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
-
-
 contract BankC {
     function deposit() public payable {}
-
 
     function transferE(address payable receiver, uint amount) public {
         require(address(this).balance >= amount, "Insufficient balance");
@@ -625,23 +622,27 @@ contract BankC {
 
 
 Execution Steps:-
-Compile > Deploy (change Gas limit to ‘custom’ 3000000) > Deployments Contracts (set Value to 5 ether) > Deposit Transact >Change the Value to 0 again > Transfer E (Set the wallet address, ether amount uint256) >Transact
+Compile > Deploy (change Gas limit to ‘custom’ 3000000) 
+> Deployments Contracts (set Value to 5 ether) > Deposit Transact 
+>Change the Value to 0 again > Transfer E (Set the wallet address, ether amount uint256) 
+>Transact
  
-
 
 
 Q.2. Write a Solidity smart contract using a Student structure to store student details and marks, and implement functions to add students, count students, display student details, calculate grades and retrieve the details of a particular student.
 
-Description: The smart contract StudentGrade defines a Student structure containing the student's ID, name, address, age, and an array of marks. A mapping stud_id associates each student ID with its corresponding student details.
-The addStudent() function adds a new student and prevents duplicate student IDs using require(). The studentIds array stores the IDs separately so that all students can be accessed using a loop, while studentCount keeps track of the total number of students.
-The totalStudent() function returns the total number of students. The getAllStudents() function returns the details of all students. The getGrade() function calculates the average of the student's marks and returns a grade based on the average marks. The displayDetail() function returns the complete details of a particular student using the student's ID.
+Description: The smart contract StudentGrade defines a Student structure containing the student's ID, name, address, age, and an array of marks.
+A mapping stud_id associates each student ID with its corresponding student details.
+The addStudent() function adds a new student and prevents duplicate student IDs using require(). 
+The studentIds array stores the IDs separately so that all students can be accessed using a loop, while studentCount keeps track of the total number of students.
+The totalStudent() function returns the total number of students. The getAllStudents() function returns the details of all students. 
+The getGrade() function calculates the average of the student's marks and returns a grade based on the average marks. The displayDetail() function returns the complete details of a particular student using the student's ID.
 The contract is written using Solidity version 0.8.21 and can be compiled and deployed using the Remix IDE.
 
 
 Student.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
-
 
 contract StudentGrade {
     struct Student {
@@ -652,62 +653,63 @@ contract StudentGrade {
         uint[] marks;
     }
 
+    mapping(uint => Student) public stud_id;
+    mapping(uint => bool) public exists;
+    uint[] public studentIds;
+    uint public studentCount;
 
-    Student[] public students;
+    function addStudent(
+        uint id,
+        string memory name,
+        string memory addr,
+        uint age,
+        uint[] memory marks
+    ) public {
+        require(!exists[id], "Student ID already exists");
 
-
-    function addStudent(uint id, string memory name, string memory addr, uint age, uint[] memory marks) public {
-        students.push(Student(id, name, addr, age, marks));
+        stud_id[id] = Student(id, name, addr, age, marks);
+        exists[id] = true;
+        studentIds.push(id);
+        studentCount++;
     }
 
-
-    function displayStudent() public view returns (Student[] memory) {
-        return students;
+    function totalStudent() public view returns (uint) {
+        return studentCount;
     }
 
-
-    function countStudents() public view returns (uint) {
-        return students.length;
+    function getAllStudents() public view returns (Student[] memory) {
+        Student[] memory result = new Student[](studentCount);
+        for (uint i = 0; i < studentCount; i++) {
+            result[i] = stud_id[studentIds[i]];
+        }
+        return result;
     }
-
 
     function getGrade(uint id) public view returns (string memory) {
-        for (uint i = 0; i < students.length; i++) {
-            if (students[i].id == id) {
-                uint total = 0;
+        require(exists[id], "Student not found");
 
+        uint total = 0;
+        uint[] memory m = stud_id[id].marks;
 
-                if (students[i].marks.length == 0)
-                    return "No marks";
-
-
-                for (uint j = 0; j < students[i].marks.length; j++)
-                    total += students[i].marks[j];
-
-
-                uint avg = total / students[i].marks.length;
-
-
-                if (avg >= 90) return "Grade: A+";
-                if (avg >= 80) return "Grade: A";
-                if (avg >= 70) return "Grade: B";
-                if (avg >= 60) return "Grade: C";
-                if (avg >= 50) return "Grade: D";
-                return "Grade: F";
-            }
+        require(m.length > 0, "No marks available");
+        for (uint i = 0; i < m.length; i++) {
+            total += m[i];
         }
-        return "Student not found";
+        uint avg = total / m.length;
+        if (avg >= 90) return "A+";
+        if (avg >= 80) return "A";
+        if (avg >= 70) return "B";
+        if (avg >= 60) return "C";
+        if (avg >= 50) return "D";
+        return "F";
     }
 
-
-    function getStudent(uint id) public view returns (uint, string memory, string memory, uint, uint[] memory) {
-        for (uint i = 0; i < students.length; i++) {
-            if (students[i].id == id) {
-                Student memory s = students[i];
-                return (s.id, s.name, s.address_, s.age, s.marks);
-            }
-        }
-        revert("Student not found");
+    function displayDetail(uint id) public view returns (
+        uint, string memory, string memory, uint, uint[] memory
+    ) {
+        require(exists[id], "Student not found");
+        Student memory s = stud_id[id];
+        return (s.id, s.name, s.address_, s.age, s.marks);
     }
 }
 
@@ -719,12 +721,12 @@ Compile > Deploy (change Gas limit to ‘custom’ 3000000) > Deployments Contra
 
 Prac6:-
 
-Q.1 Create a contract to make quiz questions,answer them, check total number of correct answers and total number of incorrect answers. 
+Q.1 Create a contract to make quiz questions,answer them, 
+check total number of correct answers and total number of incorrect answers. 
 
 kbc.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
-
 
 contract quiz{
     struct Question{
@@ -736,9 +738,7 @@ contract quiz{
     uint public tc;
     uint public tw;
 
-
     event AnswerE(string qu, string uans, bool isc);
-
 
     function add(string memory qt, string memory cans) public {
         q.push(Question(qt,cans));
@@ -767,7 +767,6 @@ Si.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-
 contract Vehicle{
     string vehType;
     string nt;
@@ -780,7 +779,6 @@ contract Vehicle{
         return (vehType,nt);
     }
 }
-
 
 contract Bike is Vehicle{
     string brandname;
@@ -839,8 +837,6 @@ Compile > Deploy [p1,p1,child] (change Gas limit to ‘custom’ 3000000) > afte
 
 
 Prac7:-
-
-
 Q1.Create a Dapp for addition
 
 Folder Structure:
@@ -871,15 +867,17 @@ Copy rtc url and private key and paste in metamask
 
 
 Commands in terminal inside ur folder:
-* npm install -g truffle
+* npm install -g truffle      (how to install truffle)
 * npx truffle init
 * Add all codes in respective folders
+
 * npx truffle compile
 * Uncomment development (port:7545) and compilers (dont uncomment docker line) in truffle.config.js and change evmVersion to paris
-* truffle migrate          (U will get contractaddress after migrating)
+* truffle migrate          (U will get contractaddress after migrating add in app.js)
 * Add index.html and app.js
 * Replace contractaddress and add ABI from build in app.js
-* In vs extentions add ‘Live Server’ > at the bottom right click ‘Go live’ > it opens output  on browser
+* In vs extentions add ‘Live Server’ > at the bottom right click ‘Go live’ > it opens output  on browser 
+(if not then open via right > index.html> open using live server)
 
 
 index.html:
@@ -954,7 +952,6 @@ const contractABI = [
   ];
 async function addNumbers() {
     try {
-        // Connect Web3
         if (typeof window.ethereum === "undefined") {
             alert("Please install MetaMask");
             return;
@@ -962,14 +959,12 @@ async function addNumbers() {
 
         web3 = new Web3(window.ethereum);
 
-        // Request MetaMask account
         const accounts = await window.ethereum.request({
             method: "eth_requestAccounts"
         });
 
         console.log("Account:", accounts[0]);
 
-        // Create contract
         contract = new web3.eth.Contract(
             contractABI,
             contractAddress
@@ -977,7 +972,6 @@ async function addNumbers() {
 
         console.log("Contract:", contract);
 
-        // Get numbers
         const num1 =
             document.getElementById("num1").value;
 
@@ -989,7 +983,6 @@ async function addNumbers() {
             return;
         }
 
-        // Call smart contract
         const result = await contract.methods
             .add(num1, num2)
             .call();
@@ -1030,11 +1023,9 @@ contract Addition {
 Prac8:-
 Q.1 DApp to check if the entered number is prime or not?
 
-
 Download Ganache Truffle Suite 
 Login to metamask
 Copy rtc url and private key and paste in metamask
-
 
 Commands in terminal inside ur folder:
 * npm install -g truffle
@@ -1042,9 +1033,9 @@ Commands in terminal inside ur folder:
 * Add all codes in respective folders
 * npx truffle compile
 * Uncomment development (port:7545) and compilers (dont uncomment docker line) in truffle.config.js and change evmVersion to paris
-* truffle migrate          (U will get contractaddress after migrating)
-* Add index.html and app.js
-* Replace contractaddress and add ABI from build in app.js
+* npx truffle migrate          (U will get contractaddress after migrating)
+* Add index.html
+* Replace contractaddress and add ABI from build in index.js
 * In vs extentions add ‘Live Server’ > at the bottom right click ‘Go live’ > it opens output  on browser
 
 
@@ -1113,7 +1104,7 @@ index.html
 <input type="number" id="num">
 <button onclick="check()">Check</button>
 
-<p id="result"></p
+<p id="result"></p>
 
 <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 <script>
@@ -1170,7 +1161,7 @@ Commands in terminal inside ur folder:
 * Add all codes in respective folders
 * npx truffle compile
 * Uncomment development (port:7545) and compilers (dont uncomment docker line) in truffle.config.js and change evmVersion to paris
-* truffle migrate          (U will get contractaddress after migrating)
+* npx truffle migrate          (U will get contractaddress after migrating)
 * Add index.html and app.js
 * Replace contractaddress and add ABI from build in app.js
 * In vs extentions add ‘Live Server’ > at the bottom right click ‘Go live’ > it opens output  on browser
@@ -1228,7 +1219,7 @@ contract Voting {
 app.js
 
 let web3, contract, account;
-const address = "0xDF4e865E939413011F88897aC25c82Aee5928864";
+const address = "0x3bCA42017523Bdc40e53091c087Fb639dc57E961";
 const abi = [
     {
       "inputs": [],
@@ -1313,11 +1304,12 @@ const abi = [
     }
   ];
 
-
 async function connect() {
     try {
-        if (!window.ethereum) throw new Error("Please install MetaMask.");
+        if (!window.ethereum)
+            throw new Error("Install MetaMask!");
 
+        await ethereum.request({ method: "eth_requestAccounts" });
 
         try {
             await ethereum.request({
@@ -1327,66 +1319,77 @@ async function connect() {
         } catch (e) {
             if (e.code !== 4902) throw e;
 
-
             await ethereum.request({
                 method: "wallet_addEthereumChain",
                 params: [{
                     chainId: "0x539",
-                    chainName: "Ganache Localhost 7545",
-                    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                    chainName: "Ganache",
+                    nativeCurrency: {
+                        name: "Ether",
+                        symbol: "ETH",
+                        decimals: 18
+                    },
                     rpcUrls: ["http://127.0.0.1:7545"]
                 }]
             });
         }
+
+        web3 = new Web3(window.ethereum);
+
         account = (await ethereum.request({
             method: "eth_requestAccounts"
         }))[0];
-        web3 = new Web3(ethereum);
-
-        if (Number(await web3.eth.net.getId()) !== 5777)
-            throw new Error("Connect to Ganache network.");
 
         contract = new web3.eth.Contract(abi, address);
 
-        document.getElementById("account").innerText = "Connected: " + account;
-        document.getElementById("status").innerText = "Wallet connected successfully.";
+        document.getElementById("account").innerText =
+            "Connected: " + account;
+
+        document.getElementById("status").innerText =
+            "Wallet connected successfully!";
+
         await getVotes();
 
     } catch (e) {
         document.getElementById("status").innerText = e.message;
     }
 }
+
 async function vote1() {
-    await castVote("voteC1");
+    await vote("voteC1");
 }
+
 async function vote2() {
-    await castVote("voteC2");
+    await vote("voteC2");
 }
-async function castVote(method) {
+
+async function vote(method) {
     try {
         if (!contract) await connect();
         if (!contract) return;
 
-        document.getElementById("status").innerText = "Confirm the transaction in MetaMask.";
+        document.getElementById("status").innerText =
+            "Confirm transaction in MetaMask.";
 
         await contract.methods[method]().send({ from: account });
 
-        document.getElementById("status").innerText = "Vote submitted successfully!";
+        document.getElementById("status").innerText =
+            "Vote submitted successfully!";
+
         await getVotes();
 
     } catch (e) {
-        document.getElementById("status").innerText = e.message || "Voting failed.";
+        document.getElementById("status").innerText =
+            e.message || "Voting failed";
     }
 }
 
 async function getVotes() {
     try {
-        if (!contract) {
-            await connect();
-            return;
-        }
+        if (!contract) return;
 
-        const votes = await contract.methods.getVotes().call();
+        let votes = await contract.methods.getVotes().call();
+
         document.getElementById("c1").innerText = votes[0];
         document.getElementById("c2").innerText = votes[1];
 
@@ -1395,17 +1398,6 @@ async function getVotes() {
     }
 }
 
-if (window.ethereum) {
-    ethereum.on("accountsChanged", accounts => {
-        if (!accounts.length) {
-            account = contract = null;
-            document.getElementById("account").innerText = "Wallet not connected";
-            document.getElementById("status").innerText = "Connect your wallet.";
-        } else {
-            connect();
-        }
-    });
-}
 
 
 1_deploy.js
@@ -1436,7 +1428,7 @@ index.html
     <button onclick="getVotes()">Refresh Votes</button>
     <p id="status"></p>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.4/dist/web3.min.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
 
@@ -1656,6 +1648,7 @@ contract CrowdfundingCampaign is Crowdfunding {
 
 Prac12:-
 Create a Basic Solidity Contract using for addition of 2 numbers using Hardhat.
+
 Folder Structure:
 hardhatPrac12/
 │
@@ -1663,25 +1656,25 @@ hardhatPrac12/
 │
 ├── cache/
 │
-├── contracts/
-│   └── Addition.sol
+├── contracts/     (CREATE THIS)
+│   └── Addition.sol     (CREATE THIS)
 │
-├── ignition/
+├── ignition/    (CREATE THIS)
 │   ├── deployments/
-│   └── modules/
-│       └── Addition.js
+│   └── modules/     (CREATE THIS)
+│       └── Addition.js    (CREATE THIS)
 │
 ├── node_modules/
 │
-├── test/
-│   └── Addition.ts
+├── test/    (CREATE THIS)
+│   └── Addition.cjs    (CREATE THIS)
 │
 ├── types/
 │
 ├── .gitignore
 ├── app.js
 ├── hardhat.config.ts
-├── index.html
+├── index.html             (CREATE THIS)
 ├── package-lock.json
 ├── package.json
 ├── README.md
@@ -1804,7 +1797,7 @@ hardhat.config.ts
 import { defineConfig } from "hardhat/config";
 import toolbox from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 export default defineConfig({
-    plugins: [toolbox],
+    plugins: [toolbox],node -v
     solidity: {
         version: "0.8.34",
     },
@@ -1812,9 +1805,9 @@ export default defineConfig({
 
 
 Commands:-
-
-npm install --save-dev hardhat
-npx hardhat - -init
+**HARDHAT version 3 is required for this prac**
+npm install --save-dev hardhat       or        npm install --save-dev hardhat@^3.0.0
+npx hardhat --init
 (Select Minimal Project in it)
 Replace the hardhat.config.ts with the given above
 
@@ -1827,6 +1820,10 @@ npx hardhat node
 
 Open new terminal:
 npx hardhat ignition deploy ignition/modules/Addition.js --network
+
+OR  [if ERROR then enter the below command]
+
+npx hardhat ignition deploy ignition/modules/Addition.js --network localhost
   
 At the Bottom Right > Click “Go Live”  (Live Server)
 
@@ -1842,18 +1839,17 @@ Prac13/
 │
 ├── cache/
 │
-├── contracts/
-│   └── PerfectNumber.sol
+├── contracts/   (CREATE THIS)
+│   └── PerfectNumber.sol   (CREATE THIS)
 │
-├── frontend/
-│   ├── index.html
-│   └── main.js
+├── frontend/   (CREATE THIS)
+│   ├── index.html   (CREATE THIS)
+│   └── main.js      (CREATE THIS)
 │
-├── ignition/
-│   ├── deployments/
-│   └── modules/
-│       └── PerfectNumber.ts
-│
+├── ignition/       (CREATE THIS)
+│   └── modules/     (CREATE THIS)
+│       └── PerfectNumber.ts   (CREATE THIS)
+│   
 ├── node_modules/
 │
 ├── .gitignore
@@ -1862,7 +1858,6 @@ Prac13/
 ├── package.json
 ├── README.md
 └── tsconfig.json
-
 
 Commands:
 node --version
